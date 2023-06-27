@@ -1,0 +1,42 @@
+on:
+  push:
+    branches:
+      - "master"
+      - "main"
+    paths:
+      - 'src/**.cpp'
+      - 'src/**.h'
+      - 'Makefile'
+      - 'makefile'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Setup GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: latest
+          platform: x64
+      - name: Run Clean
+        run: make clean
+      - name: Run build
+        run: make
+      - name: Check required files
+        run: |
+          for FILE in bin/race
+          do
+            if test -f $FILE
+            then
+              echo "File $FILE EXISTS"
+            else
+              echo "File $FILE DOES NOT EXISTS"
+              exit 1
+            fi
+          done
+      - name: Test run
+        run: make run
+        timeout-minutes: 5
